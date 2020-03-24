@@ -135,16 +135,19 @@ public class TikTakToeGame {
 
     public static void main(String[] args) throws InterruptedException {
         initMap();
+        int move = 0;
         while (true) {
             printMap();
-            humanTurn();
+            if ((move % 2) == 0) {
+                move++;
+                humanTurn();
+            } else {
+                move++;
+                aiTurn();
+            }
+            printMap();
             if (checkWin()) break;
             if (isFullMap()) break;
-            printMap();
-            aiTurn();
-            if (checkWin()) break;
-            if (isFullMap()) break;
-            printMap();
         }
     }
 
