@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 public class TikTakToeGame {
     public static char[][] map;
-    public static final int SIZE = 3;
+    public static int SIZE = 3;
     public static final char DOT_EMPTY = '_';
     public static final char DOT_X = 'X';
     public static final char DOT_O = 'O';
@@ -53,8 +53,7 @@ public class TikTakToeGame {
 
     public static boolean isCellValid(int x, int y) {
         if (x < 0 || x >= SIZE || y < 0 || y >= SIZE) return false;
-        if (map[y][x] == DOT_EMPTY) return true;
-        return false;
+        return map[y][x] == DOT_EMPTY;
     }
 
     public static boolean isFullMap() {
@@ -63,13 +62,13 @@ public class TikTakToeGame {
                 if (map[i][j] == DOT_EMPTY) return false;
             }
         }
-        System.out.println("Ничья");
+        System.out.println("Игра окончена. Ничья");
         return true;
     }
 
     public static void pauseAiTurn() throws InterruptedException {
         System.out.print("Ход компьютера");
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 4; i++) {
             Thread.sleep(300);
             System.out.print(".");
         }
@@ -79,57 +78,84 @@ public class TikTakToeGame {
     public static void aiTurn() throws InterruptedException {
         pauseAiTurn();
         Random rand = new Random();
-        /*boolean anyAngleIsEmpty = (map[0][0] == DOT_EMPTY || map[0][SIZE - 1] == DOT_EMPTY ||
-                map[SIZE - 1][0] == DOT_EMPTY || map[SIZE - 1][SIZE - 1] == DOT_EMPTY);
-        for (int i = 0; i < SIZE; i++) {
-            for (int j = 0; j < SIZE; j++) {
-                if (anyAngleIsEmpty)
+        if (flagBlockHorizontal) {
+            flagBlockHorizontal = false;
+            for (int i = 0; i < SIZE; i++) {
+                if (map[blockTurn[HORIZONTAL]][i] == DOT_EMPTY) {
+                    map[blockTurn[HORIZONTAL]][i] = DOT_O;
+                    return;
+                }
             }
-        }*/
-        int x, y;
-        do {
-            x = rand.nextInt(SIZE);
-            y = rand.nextInt(SIZE);
-        } while (!isCellValid(x, y));
-        map[y][x] = DOT_O;
-    }
-
-    public static boolean flagFinish = false;
-    public static boolean flagBlock = false;
-    public static int[] finishTurn;
-    public static int[] blockTurn;
-    public static final int HORIZONTAL = 0;
-    public static final int VERTIKAL = 1;
-    public static final int DIAGANAL = 2;
-    public static final int REVERSDIAGANAL = 3;
-
-    public static boolean flagAi(int dotWin, int index, int line){
-        if (dotWin == SIZE - 1) {
-            flagBlock = true;
-            blockTurn[line] = index;
-        } else if (dotWin == SIZE) {
-            return true;
+        } else if (flagBlockVertical) {
+            flagBlockVertical = false;
+            for (int i = 0; i < SIZE; i++) {
+                if (map[i][blockTurn[VERTICAL]] == DOT_EMPTY) {
+                    map[i][blockTurn[VERTICAL]] = DOT_O;
+                    return;
+                }
+            }
+        } else if (flagBlockDiagonal) {
+            flagBlockDiagonal = false;
+            for (int i = 0; i < SIZE; i++) {
+                if (map[i][i] == DOT_EMPTY) {
+                    map[i][i] = DOT_O;
+                    return;
+                }
+            }
+        } else if (flagBlockReversDiagonal) {
+            flagBlockReversDiagonal = false;
+            for (int i = 0; i < SIZE; i++) {
+                if (map[i][SIZE - 1 - i] == DOT_EMPTY) {
+                    map[i][SIZE - 1 - i] = DOT_O;
+                    return;
+                }
+            }
+        } else {
+            int x, y;
+            do {
+                x = rand.nextInt(SIZE);
+                y = rand.nextInt(SIZE);
+            } while (!isCellValid(x, y));
+            map[y][x] = DOT_O;
         }
     }
 
+    public static boolean flagFinish = false;
+    public static boolean flagBlockHorizontal = false;
+    public static boolean flagBlockVertical = false;
+    public static boolean flagBlockDiagonal = false;
+    public static boolean flagBlockReversDiagonal = false;
+    public static int[] finishTurn;
+    public static int[] blockTurn;
+    public static final int HORIZONTAL = 0;
+    public static final int VERTICAL = 1;
+
     public static boolean checkWin() {
+        int countTurn = SIZE * 2 + 2;
         int dotWinX = 0;
         int dotWinO = 0;
-        finishTurn = new int[]{9,9,9,9};
-        blockTurn = new int[]{9,9,9,9};
+        finishTurn = new int[2];
+        blockTurn = new int[2];
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
                 if (map[i][j] == DOT_X) dotWinX++;
                 else if (map[i][j] == DOT_O) dotWinO++;
             }
-            if (flagAi(dotWinX, i, HORIZONTAL)) {
-                System.out.println("Победил человек");
+            if (dotWinX == SIZE) {
+                System.out.println("Игра окончена. Победил человек");
                 return true;
             }
-            if (flagAi(dotWinO, i, HORIZONTAL)) {
-                System.out.println("Победил искуственный интелект");
+            if (dotWinO == SIZE) {
+                System.out.println("Игра окончена. Победил искуственный интелект");
                 return true;
             }
+            if (dotWinX - dotWinO == SIZE - 1) {
+                flagBlockHorizontal = true;
+                blockTurn[HORIZONTAL] = i;
+            } else if (dotWinO - dotWinX == SIZE - 1) {
+                flagFinish = true;
+            }
+            if ((dotWinX > 0) && (dotWinO > 0)) countTurn--;
             dotWinX = 0;
             dotWinO = 0;
         }
@@ -140,14 +166,21 @@ public class TikTakToeGame {
                 if (map[j][i] == DOT_X) dotWinX++;
                 else if (map[j][i] == DOT_O) dotWinO++;
             }
-            if (flagAi(dotWinX, i, VERTIKAL)) {
-                System.out.println("Победил человек");
+            if (dotWinX == SIZE) {
+                System.out.println("Игра окончена. Победил человек");
                 return true;
             }
-            if (flagAi(dotWinO, i, VERTIKAL)) {
-                System.out.println("Победил искуственный интелект");
+            if (dotWinO == SIZE) {
+                System.out.println("Игра окончена. Победил искуственный интелект");
                 return true;
             }
+            if (dotWinX - dotWinO == SIZE - 1) {
+                flagBlockVertical = true;
+                blockTurn[VERTICAL] = i;
+            } else if (dotWinO - dotWinX == SIZE - 1) {
+                flagFinish = true;
+            }
+            if ((dotWinX > 0) && (dotWinO > 0)) countTurn--;
             dotWinX = 0;
             dotWinO = 0;
         }
@@ -158,14 +191,20 @@ public class TikTakToeGame {
             else if (map[i][i] == DOT_O) dotWinO++;
 
             if (dotWinX == SIZE) {
-                System.out.println("Победил человек");
+                System.out.println("Игра окончена. Победил человек");
                 return true;
             }
             if (dotWinO == SIZE) {
-                System.out.println("Победил искуственный интелект");
+                System.out.println("Игра окончена. Победил искуственный интелект");
                 return true;
             }
         }
+        if (dotWinX - dotWinO == SIZE - 1) {
+            flagBlockDiagonal = true;
+        } else if (dotWinO - dotWinX == SIZE - 1) {
+            flagFinish = true;
+        }
+        if ((dotWinX > 0) && (dotWinO > 0)) countTurn--;
         dotWinX = 0;
         dotWinO = 0;
         for (int i = 0; i < SIZE; i++) {
@@ -173,18 +212,30 @@ public class TikTakToeGame {
             else if (map[i][SIZE - 1 - i] == DOT_O) dotWinO++;
 
             if (dotWinX == SIZE) {
-                System.out.println("Победил человек");
+                System.out.println("Игра окончена. Победил человек");
                 return true;
             }
             if (dotWinO == SIZE) {
-                System.out.println("Победил искуственный интелект");
+                System.out.println("Игра окончена. Победил искуственный интелект");
                 return true;
             }
+        }
+        if (dotWinX - dotWinO == SIZE - 1) {
+            flagBlockReversDiagonal = true;
+        } else if (dotWinO - dotWinX == SIZE - 1) {
+            flagFinish = true;
+        }
+        if ((dotWinX > 0) && (dotWinO > 0)) countTurn--;
+        if (countTurn <= 0) {
+            System.out.println("Игра окончена. Больше нет смысла ходить. Ничья");
+            return true;
         }
         return false;
     }
 
     public static void main(String[] args) throws InterruptedException {
+        System.out.println("Введите размер поля:");
+        SIZE = sc.nextInt();
         initMap();
         int move = 0;
         printMap();
@@ -201,5 +252,4 @@ public class TikTakToeGame {
             if (isFullMap()) break;
         }
     }
-
 }
