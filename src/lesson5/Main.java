@@ -13,8 +13,8 @@ public class Main {
 
         persons.get(Person.rnd(0, persons.size()-1)).info();
 
-        for (int i = 0; i < persons.size(); i++) {
-            persons.get(i).info40more();
+        for (Person person : persons) {
+            person.info(40);
         }
     }
 }

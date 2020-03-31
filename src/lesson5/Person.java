@@ -22,13 +22,14 @@ public class Person {
         this.age = rnd(25, 75);
     }
 
+
     public void info() {
             System.out.println("Сотрудник: " + fio + "\nДолжность: " + post + "\nПочта: " +
                     mail + "\nТелефон: " + phone + "\nЗарплата: " + salary + "\nВозраст: " + age + "\n");
     }
 
-    public void info40more() {
-        if (age > 40)
+    public void info(int age) {
+        if (this.age > age)
             System.out.println("Сотрудник: " + fio + "\nДолжность: " + post + "\nПочта: " +
                     mail + "\nТелефон: " + phone + "\nЗарплата: " + salary + "\nВозраст: " + age + "\n");
     }
