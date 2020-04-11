@@ -3,7 +3,7 @@ package lesson4;
 import java.util.Random;
 import java.util.Scanner;
 
-public class TikTakToeGame {
+public class HomeWork4 {
     public static char[][] map;
     public static int SIZE = 3;
     public static final char DOT_EMPTY = '_';
